@@ -132,4 +132,3 @@ dmypy.json
 
 # Large training artifacts
 tesseracttraining
-*.traineddata
