@@ -36,3 +36,7 @@ dev = [
 [project.urls]
 "Homepage" = "https://github.com/OpenPecha/Tesseract-Uchen-Training"
 "Bug Tracker" = "https://github.com/OpenPecha/Tesseract-Uchen-Training/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
