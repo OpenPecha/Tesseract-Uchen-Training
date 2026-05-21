@@ -3,18 +3,27 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "project_name"
+name = "tesseract-uchen-training"
 version = "0.0.1"
 authors = [
   { name="OpenPecha", email="dev@openpecha.org" },
 ]
-description = "A small example package"
+description = "Repository for training Tesseract OCR on Uchen Tibetan script."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "pytesseract>=0.3.8",
+    "opencv-python>=4.5.3.56",
+    "Pillow>=8.3.1",
+    "numpy>=1.21.0",
+    "pyewts>=0.2.0",
+    "botok>=0.8.12",
+    "huggingface_hub>=0.14.1",
 ]
 
 [project.optional-dependencies]
@@ -24,7 +33,6 @@ dev = [
     "pre-commit",
 ]
 
-
 [project.urls]
-"Homepage" = "https://github.com/OpenPecha/openpecha-project-template"
-"Bug Tracker" = "https://github.com/OpenPecha/openpecha-project-template/issues"
+"Homepage" = "https://github.com/OpenPecha/Tesseract-Uchen-Training"
+"Bug Tracker" = "https://github.com/OpenPecha/Tesseract-Uchen-Training/issues"
