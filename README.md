@@ -1,148 +1,111 @@
-# README
+# Tesseract-Uchen-Training
 
-> **Note:** This readme template is based on one from the [Good Docs Project](https://thegooddocsproject.dev). You can find it and a guide to filling it out [here](https://gitlab.com/tgdp/templates/-/tree/main/readme). (_Erase this note after filling out the readme._)
+A customized [tesstrain](https://github.com/tesseract-ocr/tesstrain) pipeline for training Tesseract OCR on Tibetan Uchen script.
 
-<h1 align="center">
-  <br>
-  <a href="https://openpecha.org"><img src="https://avatars.githubusercontent.com/u/82142807?s=400&u=19e108a15566f3a1449bafb03b8dd706a72aebcd&v=4" alt="OpenPecha" width="150"></a>
-  <br>
-</h1>
+## Overview
 
-## _Project Name_
-_The project name should match its code's capability so that new users can easily understand what it does._
+This repository extends the upstream `tesstrain` pipeline with data preparation scripts and a Makefile configured for Tibetan Uchen training. It produces a `tib.traineddata` model trained from scratch on OpenPecha Uchen datasets.
 
-## Owner(s)
+## Repository Structure
 
-_Change to the owner(s) of the new repo. (This template's owners are:)_
-- [@ngawangtrinley](https://github.com/ngawangtrinley)
-- [@mikkokotila](https://github.com/mikkokotila)
-- [@evanyerburgh](https://github.com/evanyerburgh)
+```text
+.
+├── Scripts/              # Custom data preparation scripts
+├── Makefile              # Customized tesstrain Makefile
+├── model/                # Trained model checkpoint
+├── plots/                # Training plots
+└── (upstream tesstrain files)
+```
 
+## Customizations
 
-## Table of contents
-<p align="center">
-  <a href="#project-description">Project description</a> •
-  <a href="#who-this-project-is-for">Who this project is for</a> •
-  <a href="#project-dependencies">Project dependencies</a> •
-  <a href="#instructions-for-use">Instructions for use</a> •
-  <a href="#contributing-guidelines">Contributing guidelines</a> •
-  <a href="#additional-documentation">Additional documentation</a> •
-  <a href="#how-to-get-help">How to get help</a> •
-  <a href="#terms-of-use">Terms of use</a>
-</p>
-<hr>
+### Data Preparation Scripts (`Scripts/`)
 
-## Project description
-_Use one of these:_
+- **`lmdbdownload.py`** — Extracts samples from LMDB-format datasets. Validates labels against a Tibetan Uchen charset, filters out invalid or oversized samples, and writes paired image and label files. Uses multiprocessing.
+- **`preprocess.py`** — Converts extracted image/label pairs into tesstrain format with `.gt.txt` ground truth files.
 
-With _Project Name_ you can _verb_ _noun_...
+Train/test/eval splits were generated using [OpenPecha/Tibetan_stacks_and_frequency](https://github.com/OpenPecha/Tibetan_stacks_and_frequency).
 
-_Project Name_ helps you _verb_ _noun_...
+### Makefile Configuration
 
+The Makefile is pre-configured for Tibetan training:
 
-## Who this project is for
-This project is intended for _target user_ who wants to _user objective_.
+| Parameter | Value |
+|---|---|
+| `MODEL_NAME` | `tib` |
+| `LANG_TYPE` | `Indic` |
+| `PSM` | `13` |
+| `EPOCHS` | `3` |
+| `LEARNING_RATE` | `0.002` |
+| `RATIO_TRAIN` | `0.9` |
+| `TARGET_ERROR_RATE` | `0.001` |
+| `START_MODEL` | (blank — trained from scratch) |
 
+The network specification is a custom CNN + LSTM architecture tuned for line images around 1551×100 pixels:
+[1,36,0,1 Ct3,3,32 Mp2,2 Ct3,3,48 Mp2,2 Lfys96 Lfx128 Lrx128 Lfx192 O1c###]
 
-## Project dependencies
-Before using _Project Name_, ensure you have:
-* python _version_
-* _Prerequisite 2_
-* _Prerequisite 3..._
+`LANG_TYPE=Indic` enables the pass-through recoder, which is needed for Tibetan's stacked consonants and complex graphemes.
 
+## Workflow
 
-## Instructions for use
-Get started with _Project Name_ by _(write the first step a user needs to start using the project. Use a verb to start.)_.
+1. **Prepare data** — convert your dataset into tesstrain format:
+```bash
+   python Scripts/preprocess.py
+```
 
+2. **Download Tesseract language data**:
+```bash
+   make tesseract-langdata
+```
 
-### Install _Project Name_
-1. _Write the step here._ 
+3. **Train**:
+```bash
+   make training
+```
 
-    _Explanatory text here_ 
-    
-    _(Optional: Include a code sample or screenshot that helps your users complete this step.)_
+4. **Evaluate**:
+```bash
+   make evaluation
+```
 
-2. _Write the step here._
- 
-    a. _Substep 1_ 
-    
-    b. _Substep 2_
+5. **Plot results**:
+```bash
+   make plot
+```
 
+## Training Data
 
-### Configure _Project Name_
-1. _Write the step here._
-2. _Write the step here._
+Training data is sourced from six OpenPecha Uchen datasets, totaling approximately 3.7M images.
 
+| Dataset | Share |
+|---|---|
+| NorbuKetaka | 48.60% |
+| Derge | 18.95% |
+| Google Books | 16.42% |
+| Lithang | 11.90% |
+| Lhasa | 3.53% |
+| Karmapa | 0.60% |
 
-### Run _Project Name_
-1. _Write the step here._
-2. _Write the step here._
+Proportional subsets used for staged training:
 
+| Subset | Total Images |
+|---|---|
+| Small | 37,000 |
+| Medium | 370,000 |
+| Full | 3,688,354 |
 
-### Troubleshoot _Project Name_
-1. _Write the step here._
-2. _Write the step here._
+## Results
 
-<table>
-  <tr>
-   <td>
-    Issue
-   </td>
-   <td>
-    Solution
-   </td>
-  </tr>
-  <tr>
-   <td>
-    _Describe the issue here_
-   </td>
-   <td>
-    _Write solution here_
-   </td>
-  </tr>
-  <tr>
-   <td>
-    _Describe the issue here_
-   </td>
-   <td>
-    _Write solution here_
-   </td>
-  </tr>
-  <tr>
-   <td>
-    _Describe the issue here_
-   </td>
-   <td>
-    _Write solution here_
-   </td>
-  </tr>
-</table>
+The model checkpoint in `model/tib.traineddata` is from the `tib_small` training run on the 37K subset.
 
+**Best BCER: 5.03%**
 
-Other troubleshooting supports:
-* _Link to FAQs_
-* _Link to runbooks_
-* _Link to other relevant support information_
+## Technical Details
 
+- Tesseract version: 5.4.1
+- Engine: LSTM (Tesseract 4+ neural OCR)
+- Tools: `make`, `lstmtraining`, `lstmeval`
 
-## Contributing guidelines
-If you'd like to help out, check out our [contributing guidelines](/CONTRIBUTING.md).
+## Upstream
 
-
-## Additional documentation
-_Include links and brief descriptions to additional documentation._
-
-For more information:
-* [Reference link 1](#)
-* [Reference link 2](#)
-* [Reference link 3](#)
-
-
-## How to get help
-* File an issue.
-* Email us at openpecha[at]gmail.com.
-* Join our [discord](https://discord.com/invite/7GFpPFSTeA).
-
-
-## Terms of use
-_Project Name_ is licensed under the [MIT License](/LICENSE.md).
+Based on [tesseract-ocr/tesstrain](https://github.com/tesseract-ocr/tesstrain). See the upstream repository for general Tesseract training documentation.
